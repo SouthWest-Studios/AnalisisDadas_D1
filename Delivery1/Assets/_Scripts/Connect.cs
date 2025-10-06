@@ -20,7 +20,6 @@ public class Connect : MonoBehaviour
         Simulator.OnNewPlayer -= OnPlayerCreated;
     }
 
-   
     void OnPlayerCreated(string name, string country, int age, float gender, DateTime date)
     {
         Debug.Log($"Name: {name}");
@@ -39,11 +38,15 @@ public class Connect : MonoBehaviour
         StartCoroutine(Upload(formData));
     }
 
-
-    //Raul
-    void OnNewSession()
+    void OnNewSession(DateTime date, uint playerId)
     {
+    Debug.Log("New session started for player: " + playerId);
 
+    List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
+    formData.Add(new MultipartFormDataSection("player_id", playerId.ToString()));
+    formData.Add(new MultipartFormDataSection("session_date", date.ToString("yyyy-MM-dd HH:mm:ss")));
+
+    StartCoroutine(Upload(formData));
     }
 
     //Aleix
@@ -87,12 +90,11 @@ public class Connect : MonoBehaviour
             {
                 Debug.Log("Form upload complete!");
                 Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-               // CallbackEvents.OnNewSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
+                CallbackEvents.OnNewSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
                 CallbackEvents.OnAddPlayerCallback?.Invoke(uint.Parse(www.downloadHandler.text));
                // CallbackEvents.OnItemBuyCallback?.Invoke(uint.Parse(www.downloadHandler.text));
                 
                // CallbackEvents.OnEndSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
         }
     }
-
 }
