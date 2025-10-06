@@ -1,0 +1,2 @@
+DAU:SELECT DATE(register_date) AS dia, COUNT(*) AS usuarios_registrados FROM player GROUP BY dia
+MAU:SELECT DATE_FORMAT(register_date, '%Y-%m') AS mes, COUNT(*) AS usuarios_registrados FROM player GROUP BY mes
