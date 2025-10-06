@@ -7,7 +7,6 @@ using System;
 public class Connect : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public Simulator simulator;
 
     void OnEnable()
     {
@@ -36,12 +35,29 @@ public class Connect : MonoBehaviour
         formData.Add(new MultipartFormDataSection("age", age.ToString()));
         formData.Add(new MultipartFormDataSection("gender", gender.ToString()));
         formData.Add(new MultipartFormDataSection("register_date", date.ToString("yyyy-MM-dd HH:mm:ss")));
-
         
         StartCoroutine(Upload(formData));
-        
+    }
+
+
+    //Raul
+    void OnNewSession()
+    {
 
     }
+
+    //Aleix
+    void OnBuyItem()
+    {
+
+    }
+
+    //Guillem
+    void OnEndSession()
+    {
+
+    }
+
     IEnumerator Start()
     {
         UnityWebRequest www = UnityWebRequest.Get("https://citmalumnes.upc.es/~jial/login.php");
@@ -71,6 +87,11 @@ public class Connect : MonoBehaviour
             {
                 Debug.Log("Form upload complete!");
                 Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
+               // CallbackEvents.OnNewSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
+                CallbackEvents.OnAddPlayerCallback?.Invoke(uint.Parse(www.downloadHandler.text));
+               // CallbackEvents.OnItemBuyCallback?.Invoke(uint.Parse(www.downloadHandler.text));
+                
+               // CallbackEvents.OnEndSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
         }
     }
 
