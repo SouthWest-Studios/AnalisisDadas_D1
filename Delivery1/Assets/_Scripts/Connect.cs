@@ -56,9 +56,14 @@ public class Connect : MonoBehaviour
     }
 
     //Guillem
-    void OnEndSession()
+    void OnEndSession(DateTime date, uint playerId)
     {
+        Debug.Log("End session for player: " + playerId);
 
+        List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
+        formData.Add(new MultipartFormDataSection("session_time", date.ToString("yyyy-MM-dd HH:mm:ss")));
+
+        StartCoroutine(Upload(formData));
     }
 
     IEnumerator Start()
