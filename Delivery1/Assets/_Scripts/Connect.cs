@@ -1,8 +1,9 @@
-using UnityEngine;
-using UnityEngine.Networking;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+using System.Diagnostics;
+using UnityEngine;
+using UnityEngine.Networking;
 
 public class Connect : MonoBehaviour
 {
@@ -50,9 +51,18 @@ public class Connect : MonoBehaviour
     }
 
     //Aleix
-    void OnBuyItem()
+    void OnBuyItem(int item, DateTime dateTime, uint sessionID)
     {
+        //user ID, Item,  hora
 
+        Debug.Log("New item buyed for player: " + sessionID);
+
+        List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
+        formData.Add(new MultipartFormDataSection("item", item.ToString()));
+        formData.Add(new MultipartFormDataSection("user_id", sessionID.ToString()));
+        formData.Add(new MultipartFormDataSection("date_time", date.ToString("yyyy-MM-dd HH:mm:ss")));
+
+        StartCoroutine(Upload(formData));
     }
 
     //Guillem
