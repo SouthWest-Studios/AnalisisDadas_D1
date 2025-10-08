@@ -60,7 +60,7 @@ public class Connect : MonoBehaviour
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
         formData.Add(new MultipartFormDataSection("item", item.ToString()));
         formData.Add(new MultipartFormDataSection("user_id", sessionID.ToString()));
-        formData.Add(new MultipartFormDataSection("date_time", date.ToString("yyyy-MM-dd HH:mm:ss")));
+        formData.Add(new MultipartFormDataSection("date_time", dateTime.ToString("yyyy-MM-dd HH:mm:ss")));
 
         StartCoroutine(Upload(formData));
     }
