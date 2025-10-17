@@ -7,8 +7,8 @@ using UnityEngine.Networking;
 
 public class Connect : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
 
+    //Nos añadimos a las acciones
     void OnEnable()
     {
        
@@ -18,6 +18,7 @@ public class Connect : MonoBehaviour
         Simulator.OnEndSession += OnEndSession;
     }
 
+    //Nos desvinculamos a las acciones
     void OnDisable()
     {
        
@@ -27,152 +28,98 @@ public class Connect : MonoBehaviour
         Simulator.OnEndSession -= OnEndSession;
     }
 
+    //Al crear un player nuevo
     void OnPlayerCreated(string name, string country, int age, float gender, DateTime date)
     {
-        Debug.Log($"Name: {name}");
-        Debug.Log($"Country: {country}");
-        Debug.Log($"Age: {age}");
-        Debug.Log($"Gender (float): {gender}");
-        Debug.Log($"Date: {date.ToString("yyyy-MM-dd HH:mm:ss")}");
+        //INFORMACION DE DEBUG
+        //Debug.Log($"Name: {name}");
+        //Debug.Log($"Country: {country}");
+        //Debug.Log($"Age: {age}");
+        //Debug.Log($"Gender (float): {gender}");
+        //Debug.Log($"Date: {date.ToString("yyyy-MM-dd HH:mm:ss")}");
 
+        //Rellenamos los datos
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
         formData.Add(new MultipartFormDataSection("user", name));
         formData.Add(new MultipartFormDataSection("country", country));
         formData.Add(new MultipartFormDataSection("age", age.ToString()));
         formData.Add(new MultipartFormDataSection("gender", gender.ToString()));
         formData.Add(new MultipartFormDataSection("register_date", date.ToString("yyyy-MM-dd HH:mm:ss")));
-
         formData.Add(new MultipartFormDataSection("type", "NewPlayer"));
 
-        StartCoroutine(UploadPlayer(formData));
+        //Enviamos los datos y decimos que hacer con la respuesta
+        StartCoroutine(UploadData(formData, CallbackEvents.OnAddPlayerCallback));
     }
 
     void OnNewSession(DateTime date, uint playerId)
     {
+        //INFORMACION
         Debug.Log("New session started for player: " + playerId);
 
+        //Rellenamos los datos
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
         formData.Add(new MultipartFormDataSection("user_id", playerId.ToString()));
         formData.Add(new MultipartFormDataSection("date_time", date.ToString("yyyy-MM-dd HH:mm:ss")));
         formData.Add(new MultipartFormDataSection("type", "NewSession"));
 
-        StartCoroutine(UploadNewSession(formData));
+        //Enviamos los datos y decimos que hacer con la respuesta
+        StartCoroutine(UploadData(formData, CallbackEvents.OnNewSessionCallback));
     }
 
-    //Aleix
+   
     void OnBuyItem(int item, DateTime dateTime, uint sessionID)
     {
-        //user ID, Item,  hora
 
+        //INFORMACION
         Debug.Log("New item buyed for player: " + sessionID);
 
+        //Rellenamos los datos
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
         formData.Add(new MultipartFormDataSection("item", item.ToString()));
         formData.Add(new MultipartFormDataSection("session_id", sessionID.ToString()));
         formData.Add(new MultipartFormDataSection("date_time", dateTime.ToString("yyyy-MM-dd HH:mm:ss")));
         formData.Add(new MultipartFormDataSection("type", "NewItem"));
 
-        StartCoroutine(UploadItem(formData));
+        //Enviamos los datos y decimos que hacer con la respuesta
+        StartCoroutine(UploadData(formData, CallbackEvents.OnItemBuyCallback));
     }
 
-    //Guillem
+ 
     void OnEndSession(DateTime date, uint sessionID)
     {
+        //INFORMACION
         Debug.Log("End session for player: " + sessionID);
 
+        //Rellenamos los datos
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-            formData.Add(new MultipartFormDataSection("session_id", sessionID.ToString()));
+        formData.Add(new MultipartFormDataSection("session_id", sessionID.ToString()));
         formData.Add(new MultipartFormDataSection("session_time", date.ToString("yyyy-MM-dd HH:mm:ss")));
         formData.Add(new MultipartFormDataSection("type", "EndSession"));
-        StartCoroutine(UploadEndSession(formData));
+
+        //Enviamos los datos y decimos que hacer con la respuesta
+        StartCoroutine(UploadData(formData, CallbackEvents.OnEndSessionCallback));
     }
 
-    IEnumerator Start()
+    //Enviado de los datos
+    IEnumerator UploadData(List<IMultipartFormSection> formData, Action<uint> onOk)
     {
-        UnityWebRequest www = UnityWebRequest.Get("https://citmalumnes.upc.es/~jial/login.php");
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError(www.error);
-        }
-        else
-        {
-            Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-        }
-    }
-
-    IEnumerator UploadPlayer(List<IMultipartFormSection> formData) 
-        {
-            UnityWebRequest www = UnityWebRequest.Post("https://citmalumnes.upc.es/~jial/uploadData.php", formData);
-            yield return www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-
-                Debug.Log(www.error);
-            }
-            else
-            {
-                Debug.Log("Form upload complete!");
-                Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-                CallbackEvents.OnAddPlayerCallback?.Invoke(uint.Parse(www.downloadHandler.text));
-        }
-    }
-
-    IEnumerator UploadNewSession(List<IMultipartFormSection> formData)
-    {
+        //Enviamos los datos utilizando POST (mas seguro que el GET)
         UnityWebRequest www = UnityWebRequest.Post("https://citmalumnes.upc.es/~jial/uploadData.php", formData);
         yield return www.SendWebRequest();
 
+        //Si hay algun error, mostramos la informacion
         if (www.result != UnityWebRequest.Result.Success)
         {
 
             Debug.Log(www.error);
+            yield break;
         }
         else
         {
-            Debug.Log("Form upload complete!");
+            //Mostramos la informacion conseguida del php, y invocamos el metodo que haga falta para leer los datos 
+            //Debug.Log("Form upload complete!");
             Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-            CallbackEvents.OnNewSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
-
-        }
-    }
-    IEnumerator UploadItem(List<IMultipartFormSection> formData)
-    {
-        UnityWebRequest www = UnityWebRequest.Post("https://citmalumnes.upc.es/~jial/uploadData.php", formData);
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-
-            Debug.Log(www.error);
-        }
-        else
-        {
-            Debug.Log("Form upload complete!");
-            Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-            CallbackEvents.OnItemBuyCallback?.Invoke(uint.Parse(www.downloadHandler.text));
-
-        }
-    }
-    IEnumerator UploadEndSession(List<IMultipartFormSection> formData)
-    {
-        UnityWebRequest www = UnityWebRequest.Post("https://citmalumnes.upc.es/~jial/uploadData.php", formData);
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-
-            Debug.Log(www.error);
-        }
-        else
-        {
-            Debug.Log("Form upload complete!");
-            Debug.Log("Respuesta del PHP: " + www.downloadHandler.text);
-            //CallbackEvents.OnNewSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
-            // CallbackEvents.OnItemBuyCallback?.Invoke(uint.Parse(www.downloadHandler.text));
-             CallbackEvents.OnEndSessionCallback?.Invoke(uint.Parse(www.downloadHandler.text));
+            onOk.Invoke(uint.Parse(www.downloadHandler.text));
         }
     }
 }
